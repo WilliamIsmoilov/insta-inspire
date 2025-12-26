@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/insta-api/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/insta-api/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/insta-api",
+  "projects": {
+    "insta-inspire": {
+      "type": "application",
+      "root": "apps/insta-api",
+      "entryFile": "main",
+      "sourceRoot": "apps/insta-api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insta-api/tsconfig.app.json"
+      }
+    },
+    "insta-batch": {
+      "type": "application",
+      "root": "apps/insta-batch",
+      "entryFile": "main",
+      "sourceRoot": "apps/insta-batch/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/insta-batch/tsconfig.app.json"
+      }
+    }
+  }
+}
