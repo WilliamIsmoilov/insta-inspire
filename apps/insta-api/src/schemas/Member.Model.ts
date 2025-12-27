@@ -43,10 +43,7 @@ const MemberSchema = new Schema({
     memberAddress: {
         type: String,
     },
-    memberDesc: {
-        type: String
-    },
-    memberPost: {
+    memberPosts: {
         type: Number,
         default: 0
     },
@@ -65,6 +62,9 @@ const MemberSchema = new Schema({
     memberPoints: {
         type: Number,
         default: 0
+    },
+    memberDesc:{
+        type: String
     },
     memberLikes: {
         type: Number,
