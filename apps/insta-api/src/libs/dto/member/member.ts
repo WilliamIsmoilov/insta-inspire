@@ -44,7 +44,7 @@ export class Member{
     memberFollowers: number
 
     @Field(() => Int)
-    memberFollowing: number
+    memberFollowings: number
 
     @Field(() => Int)
     memberPoints: number
@@ -62,7 +62,7 @@ export class Member{
     memberRank: number
 
     @Field(() => Int)
-    memberWarning: number
+    memberWarnings: number
 
     @Field(() => Int)
     memberBlocks: number
