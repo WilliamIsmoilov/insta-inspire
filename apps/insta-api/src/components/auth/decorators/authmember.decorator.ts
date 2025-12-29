@@ -4,7 +4,7 @@ import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 export const AuthMember = createParamDecorator((data: string, context: ExecutionContext | any) => {
     let request: any;
     if(context.contextType === 'graphql'){
-        request = context.getArgsByIndex(2).req;
+        request = context.getArgByIndex(2).req;
         if(request.body.authMember){
             request.body.authMember.authorization = request.headers?.authorization;
         }
