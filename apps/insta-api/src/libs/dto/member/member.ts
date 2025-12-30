@@ -73,6 +73,9 @@ export class Member{
     @Field(() => Date)
     createdAt: Date
 
+    @Field(() => Int)
+    memberStories: number
+
     @Field(() => String, {nullable: true})
     accessToken?: string
 

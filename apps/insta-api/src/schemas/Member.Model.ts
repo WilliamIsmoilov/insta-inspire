@@ -90,6 +90,10 @@ const MemberSchema = new Schema({
         type: Number,
         default: 0
     },
+    memberStories: {
+        type: Number,
+        default: 0
+    },
     deletedAt: {
         type: Date,
     },

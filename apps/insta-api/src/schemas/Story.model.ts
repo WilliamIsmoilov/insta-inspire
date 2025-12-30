@@ -1,18 +1,16 @@
 import { Schema } from 'mongoose';
+import { MediaType } from '../libs/enums/Media.enum';
 
 const StorySchema = new Schema({
-    memberId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: 'Member'
-    },
+    
     story: {
-        type: [String],
+        type: String,
         required: true
     },
     expiresAt: {
         type: Date,
-        required: true
+        default: () => new Date(Date.now() + 24 * 60 * 60 * 1000),
+        index: {expires: '24h'}
     },
     storyLikes: {
         type: Number,
@@ -25,5 +23,15 @@ const StorySchema = new Schema({
     storyViews: {
         type: Number,
         default: 0
+    },
+    storyDesc: {
+        type: String
+    },
+    memberId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Member'
     }
 },{timestamps: true})
+
+export default StorySchema

@@ -36,7 +36,7 @@ export const validVideoMimeTypes = [
   'video/webm',
 ];
 
-export const getSerialForMedia = (filename: string) => {
+export const getSerialForImage = (filename: string) => {
   const ext = path.parse(filename).ext;
   return `${uuidv4()}${ext}`;
 };

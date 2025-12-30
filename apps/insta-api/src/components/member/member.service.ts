@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
-import { Member } from '../../libs/dto/member/member';
+import { Member, Members } from '../../libs/dto/member/member';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
-import { Message } from '../../libs/enums/common.enum';
+import { LoginInput, MemberInput, MembersInquery } from '../../libs/dto/member/member.input';
+import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberStatus } from '../../libs/enums/member.enum';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { StatisticModifier, T } from '../../libs/types/common';
+
 
 @Injectable()
 export class MemberService {
@@ -60,4 +62,66 @@ export class MemberService {
             result.accessToken = await this.authService.createToken(result)
         return result
     }
+
+    public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member>{
+        const search: T = {
+            _id: targetId,
+            memberStatus: {
+                $in: [MemberStatus.ACTIVE, MemberStatus.BLOCK]
+            },
+        }
+
+        const targetMember = await this.memberModel.findOne(search).lean().exec()
+        if(!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
+        /// todo member follow  like view
+
+        return targetMember
+    }
+
+
+
+    /**   ADMIN   **/
+
+    public async getAllMembersByAdmin(input: MembersInquery): Promise<Members>{
+        const {text, memberStatus} = input.search
+        const match: T = {};
+        const sort: T = {[input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC}
+
+        if(memberStatus) match.memberStatus = memberStatus;
+        if(text) match.memberNick = {$regex: new RegExp(text, 'i')}
+        console.log('match:', match)
+
+        const result = await this.memberModel.aggregate([
+            {$match: match},
+            {$sort: sort},
+            {$facet: {
+                list: [{$skip: (input.page -1) * input.limit},
+                    {$limit: input.limit}
+                ],
+                metaCounter: [{$count: 'total'}]
+            }}
+        ]).exec()
+        if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
+            return result[0]
+    }
+
+
+    public async updateMemberByAdmin(input: MemberUpdate): Promise<Member>{
+        const result = await this.memberModel.findOneAndUpdate({_id: input._id}, input, {new: true})
+        if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+        return result
+    }
+
+    public async memberStatsEditor(input: StatisticModifier): Promise<Member>{
+        console.log('executed')
+        const {_id, targetKey, modifier} = input;
+        return await this.memberModel.findByIdAndUpdate(
+            _id,
+            {$inc: {[targetKey]: modifier}},
+            {new: true}
+        ).exec()
+    }
+
+
+
 }
