@@ -11,7 +11,7 @@ registerEnumType(PostType, {
 
 export enum PostStatus {
 	ACTIVE = 'ACTIVE',
-	UPDATED = 'UPDATED',
+	ARCHIVED = 'ARCHIVED',
 	DELETE = 'DELETE',
 }
 registerEnumType(PostStatus, {
