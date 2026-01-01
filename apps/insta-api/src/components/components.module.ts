@@ -7,9 +7,10 @@ import { BoardArticleResolver } from './board-article/board-article.resolver';
 import { BoardArticleModule } from './board-article/board-article.module';
 import { ViewModule } from './view/view.module';
 import { CommentModule } from './comment/comment.module';
+import { LikeModule } from './like/like.module';
 
 @Module({
-  imports: [AuthModule, MemberModule, StoryModule, PostModule, BoardArticleModule, ViewModule, CommentModule],
+  imports: [AuthModule, MemberModule, StoryModule, PostModule, BoardArticleModule, ViewModule, CommentModule, LikeModule],
   providers: [BoardArticleResolver]
 })
 export class ComponentsModule {}
