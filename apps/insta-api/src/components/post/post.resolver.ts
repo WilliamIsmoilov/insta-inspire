@@ -57,7 +57,7 @@ export class PostResolver {
 
     @Roles(MemberType.ADMIN)
     @UseGuards(AuthGuard)
-    @Query(() => Posts)
+    @Query((returns) => Posts)
     public async getAllPostsByAdmin(
         @Args('input') input: AllPostsInquery,
         @AuthMember('_id') memberId: ObjectId
@@ -65,4 +65,16 @@ export class PostResolver {
         console.log('QUery getAllPostsByAdmin')
         return await this.postService.getAllPostsByAdmin(input)
     }
+
+    @Roles(MemberType.ADMIN)
+    @UseGuards(AuthGuard)
+    @Mutation((returns) => Post)
+    public async removePostByAdmin(
+        @Args('postId') input: string
+    ): Promise<Post>{
+        console.log('Mutation removerPostbyAdmin')
+        const postId = shapeIntoMongoObjectId(input)
+        return await this.postService.removePostByAdmin(postId)
+    }
+
 }

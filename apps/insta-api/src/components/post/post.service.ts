@@ -139,4 +139,14 @@ export class PostService {
         if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
         return result[0]
      }
+
+     public async removePostByAdmin(postId: ObjectId): Promise<Post>{
+       
+        const result = await this.postModel.findOneAndDelete({_id: postId}).exec()
+        if(!result) throw new InternalServerErrorException(Message.BAD_REQUEST);
+            return result
+     }
+
+
+     /**    LIKE TARGET    **/
 }
