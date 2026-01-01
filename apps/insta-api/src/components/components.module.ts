@@ -8,9 +8,10 @@ import { BoardArticleModule } from './board-article/board-article.module';
 import { ViewModule } from './view/view.module';
 import { CommentModule } from './comment/comment.module';
 import { LikeModule } from './like/like.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
-  imports: [AuthModule, MemberModule, StoryModule, PostModule, BoardArticleModule, ViewModule, CommentModule, LikeModule],
+  imports: [AuthModule, MemberModule, StoryModule, PostModule, BoardArticleModule, ViewModule, CommentModule, LikeModule, FollowModule],
   providers: [BoardArticleResolver]
 })
 export class ComponentsModule {}
