@@ -51,8 +51,8 @@ export class Post{
     accessToken?: string
 
     /// aggregation
-    @Field(() => Member, {nullable: true})
-    memberData?: Member
+    @Field(()=> Member, {nullable: true})
+    memberData?: Member;
 
        /** likes from aggregation */
     @Field(() => [MeLiked], { nullable: true})

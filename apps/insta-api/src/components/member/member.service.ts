@@ -8,13 +8,22 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberStatus } from '../../libs/enums/member.enum';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { StatisticModifier, T } from '../../libs/types/common';
+import { LikeService } from '../like/like.service';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { ViewService } from '../view/view.service';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
+import { LikeInput } from '../../libs/dto/like/like.input';
 
 
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member')
     private readonly memberModel: Model<Member>,
+    @InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
         private authService: AuthService,
+        private likeService: LikeService,
+        private viewService: ViewService
     ){}
 
     public async signup(input: MemberInput):Promise<Member>{
@@ -63,6 +72,11 @@ export class MemberService {
         return result
     }
 
+     private async checkSubscription(followerId: ObjectId, followingId: ObjectId): Promise<MeFollowed[]> {
+      const result = await this.followModel.find({followingId: followingId, followerId: followerId}).exec();  
+      return result ? [{followerId: followerId, followingId: followingId, myFollowing: true}] : [];   
+    }
+
     public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member>{
         const search: T = {
             _id: targetId,
@@ -74,11 +88,53 @@ export class MemberService {
         const targetMember = await this.memberModel.findOne(search).lean().exec()
         if(!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
         /// todo member follow  like view
+    if(memberId){
+        const viewInput = {memberId: memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER};
+        const newView = await this.viewService.recordView(viewInput)
+
+        if(newView){
+            await this.memberModel.findOneAndUpdate(
+                search,
+                {$inc: {memberViews: 1}},
+                {new: true}
+            ).exec()
+            targetMember.memberViews++
+        }
+
+        const likeInput ={memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER};
+        targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput)
+
+        targetMember.meFollowed = await this.checkSubscription(memberId, targetId)
+    }
 
         return targetMember
     }
 
 
+    /**    LIKE    **/
+    public async likeMemberTarget(memberId: ObjectId, likeRefId: ObjectId): Promise<Member>{
+        const target: Member = await this.memberModel.findOne({
+            _id: likeRefId,
+            memberStatus: MemberStatus.ACTIVE
+        }).exec()
+
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+        const input: LikeInput = {
+            memberId: memberId,
+            likeRefId: likeRefId,
+            likeGroup: LikeGroup.MEMBER
+        };
+
+        const modifier: number = await this.likeService.toggleLike(input)
+        const result = await this.memberStatsEditor({
+            _id: likeRefId,
+            targetKey: "memberLikes",
+            modifier: modifier
+        })
+        if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+      return result;
+    }
 
     /**   ADMIN   **/
 

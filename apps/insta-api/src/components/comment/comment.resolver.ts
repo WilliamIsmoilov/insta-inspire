@@ -69,14 +69,14 @@ export class CommentResolver {
     /**    LIKE   **/
 
     @UseGuards(AuthGuard)
-    @Mutation((returns) => Comment)
+    @Mutation(() => Comment)
     public async likeTargetComment(
         @Args('commentId') input: string,
         @AuthMember('_id') memberId: ObjectId
     ): Promise<Comment>{
         console.log('Mutation: like toggle comment')
-        const commentId = shapeIntoMongoObjectId(input)
-        return await this.commentService.likeTargetComment(memberId, commentId)
+        const likeRefId = shapeIntoMongoObjectId(input)
+        return await this.commentService.likeTargetComment(memberId, likeRefId)
     }
 
 }

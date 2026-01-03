@@ -92,6 +92,17 @@ export class MemberResolver {
         return await this.memberService.getAllMembersByAdmin(input)
     }
 
+    @UseGuards(AuthGuard)
+    @Mutation(() => Member)
+    public async likeMemberTarget(
+        @Args('memberId') input: string,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<Member>{
+        console.log('Mutation: likeMembertarget')
+        const likeRefId = shapeIntoMongoObjectId(input)
+        return await this.memberService.likeMemberTarget(memberId, likeRefId)
+    }
+
 
     /**   UPLOADER   **/
 

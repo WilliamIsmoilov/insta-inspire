@@ -2,13 +2,19 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, Posts } from '../../libs/dto/post/post';
 import { Model, ObjectId } from 'mongoose';
-import { AllPostsInquery, PostInput, PostInquery } from '../../libs/dto/post/post.input';
+import { AllPostsInquery, OrdinaryInquiry, PostInput, PostInquery } from '../../libs/dto/post/post.input';
 import { MemberService } from '../member/member.service';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { PostUpdate } from '../../libs/dto/post/post.update';
 import { PostStatus, PostType } from '../../libs/enums/post.enum';
-import { shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { ViewService } from '../view/view.service';
+import { LikeService } from '../like/like.service';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { Like } from '../../libs/dto/like/like';
+import { LikeInput } from '../../libs/dto/like/like.input';
 
 
 @Injectable()
@@ -17,6 +23,8 @@ export class PostService {
         @InjectModel('Post')
         private readonly postModel: Model<Post>,
          private memberService: MemberService,
+         private viewService: ViewService,
+         private likeServica: LikeService
     ){}
 
     public async createPost(input: PostInput): Promise<Post>{
@@ -41,7 +49,25 @@ export class PostService {
         const targetPost = await this.postModel.findOne({_id: postId}).lean().exec()
         if(!targetPost) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
         // todo memberview 
-            return targetPost
+    if(memberId){
+        const viewInput = {memberId: memberId, viewRefId: postId, viewGroup: ViewGroup.POST};
+        const newView = await this.viewService.recordView(viewInput)
+
+        if(newView){
+            await this.postStatsEditor({
+                _id: postId,
+                targetKey: 'postlikes',
+                modifier: 1
+            })
+            targetPost.postViews++
+        }
+
+        //me liked
+        const likeInput = {memberId: memberId, likeRefId: postId, likeGroup: LikeGroup.POST}
+        targetPost.meLiked = await this.likeServica.checkLikeExistence(likeInput)
+    }
+        targetPost.memberData = await this.memberService.getMember( null, targetPost.memberId);
+        return targetPost;
     }
 
     public async postStatsEditor(input: StatisticModifier): Promise<Post>{
@@ -87,8 +113,11 @@ export class PostService {
             {$sort: sort},
             {$facet: {
                 list: [{$skip: (input.page -1) * input.limit },
-                    {$limit: input.limit}
+                    {$limit: input.limit},
                     //meLiked
+                    lookupAuthMemberLiked(memberId),
+                    lookupMember,
+                    {$unwind: '$memberData'}
                 ],
                 metaCounter:[{$count: 'total'}]
             }}
@@ -113,6 +142,37 @@ export class PostService {
      }
 
 
+     public async getFavourite(memberId: ObjectId, input: OrdinaryInquiry): Promise<Posts>{
+        return await this.likeServica.getMyFavouritePosts(memberId, input)
+     }
+
+      /**    LIKE TARGET    **/
+
+     public async likeTargetPost(memberId: ObjectId, likeRefId: ObjectId): Promise<Post>{
+        console.log('Mutation likeRefId')
+        const target: Post = await this.postModel.findOne({
+            _id: likeRefId,
+            postStatus: PostStatus.ACTIVE
+        }).exec()
+
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
+
+            const input: LikeInput = {
+                memberId: memberId,
+                likeRefId: likeRefId,
+                likeGroup: LikeGroup.POST
+            }
+            const modifier: number = await this.likeServica.toggleLike(input);
+            const result = await this.postStatsEditor({
+                _id: likeRefId,
+                targetKey: 'postLikes',
+                modifier: modifier
+            })
+            if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+      return result;
+     }
+
+
      /**    ADMIN    **/
 
      public async getAllPostsByAdmin(input: AllPostsInquery): Promise<Posts>{
@@ -130,7 +190,9 @@ export class PostService {
             {$sort: sort},
             {$facet: {
                 list: [{$skip: (input.page - 1) * input.limit},
-                    {$limit: input.limit}
+                    {$limit: input.limit},
+                    lookupMember,
+                    { $unwind: '$memberData' },
 
                 ],
                 metaCounter: [{$count: 'total'}]
@@ -148,5 +210,5 @@ export class PostService {
      }
 
 
-     /**    LIKE TARGET    **/
+    
 }

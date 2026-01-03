@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import PostSchema from '../../schemas/Post.model';
 import { AuthModule } from '../auth/auth.module';
 import { MemberModule } from '../member/member.module';
+import { ViewModule } from '../view/view.module';
+import { LikeModule } from '../like/like.module';
 
 @Module({
   imports: [
@@ -13,7 +15,9 @@ import { MemberModule } from '../member/member.module';
       schema: PostSchema
     }]),
     AuthModule,
-    MemberModule
+    MemberModule,
+    ViewModule,
+    LikeModule
   ],
   providers: [PostService, PostResolver],
   exports: [PostService]

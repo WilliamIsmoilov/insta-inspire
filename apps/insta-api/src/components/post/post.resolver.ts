@@ -2,7 +2,7 @@ import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { PostService } from './post.service';
 import {  UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { AllPostsInquery, PostInput } from '../../libs/dto/post/post.input';
+import { AllPostsInquery, OrdinaryInquiry, PostInput } from '../../libs/dto/post/post.input';
 import { AuthMember } from '../auth/decorators/authmember.decorator';
 import { ObjectId } from 'mongoose';
 import { Post, Posts } from '../../libs/dto/post/post';
@@ -11,11 +11,12 @@ import { shapeIntoMongoObjectId } from '../../libs/config';
 import { PostUpdate } from '../../libs/dto/post/post.update';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
+import { ViewService } from '../view/view.service';
 
 @Resolver()
 export class PostResolver {
     constructor(
-        private postService: PostService
+        private postService: PostService,
     ){}
 
     @UseGuards(AuthGuard)
@@ -51,6 +52,26 @@ export class PostResolver {
         return await this.postService.updatePost(memberId, input)
     }
 
+    @UseGuards(AuthGuard)
+    @Mutation((returns) => Post)
+    public async likeTargetPost(
+        @Args('propertyId') input: string,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<Post>{
+        console.log('mutation likeTargetPost')
+        const likeRefId = shapeIntoMongoObjectId(input)
+        return await this.postService.likeTargetPost(memberId, likeRefId)
+    }
+
+    @UseGuards(AuthGuard)
+    @Query((returns) => Posts)
+    public async getFavorites(
+        @Args('input') input: OrdinaryInquiry,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<Posts> {
+          console.log("Mutation getFavorites");
+          return await this.postService.getFavourite( memberId, input);
+    }
 
 
     /**    ADMIN    **/
