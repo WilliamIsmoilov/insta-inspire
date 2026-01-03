@@ -3,6 +3,7 @@ import { IsNotEmpty, IsOptional } from "class-validator";
 import { ObjectId } from "mongoose";
 import { Member } from "../member/member";
 import { MediaType } from "../../enums/Media.enum";
+import { MeLiked } from "../like/like";
 
 @ObjectType()
 export class Story{
@@ -35,6 +36,9 @@ export class Story{
 
     @Field(() => String, {nullable: true})
     accessToken?: string
+    
+    @Field(() => [MeLiked], {nullable: true})
+    meLiked?: MeLiked[];
 }
 
 

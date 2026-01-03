@@ -4,7 +4,8 @@ export enum LikeGroup {
 	MEMBER = 'MEMBER',
 	POST = 'POST',
 	ARTICLE = 'ARTICLE',
-	COMMENT = 'COMMENT'
+	COMMENT = 'COMMENT',
+	STORY = 'STORY'
 }
 registerEnumType(LikeGroup, {
 	name: 'LikeGroup',

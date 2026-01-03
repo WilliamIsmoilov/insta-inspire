@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Query, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { BoardArticle,  BoardArticles } from '../../libs/dto/board-article/board-article';
@@ -15,6 +15,10 @@ import { ViewService } from '../view/view.service';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
 import { LikeInput } from '../../libs/dto/like/like.input';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { Member } from '../../libs/dto/member/member';
+import { Args } from '@nestjs/graphql';
+import { AuthMember } from '../auth/decorators/authmember.decorator';
 
 @Injectable()
 export class BoardArticleService {
@@ -205,7 +209,5 @@ export class BoardArticleService {
         if(!result) throw new InternalServerErrorException(Message.BAD_REQUEST)
             return result
     }
-
-
 
 }

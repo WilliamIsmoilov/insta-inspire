@@ -6,6 +6,8 @@ import { Story, StoryInput } from '../../libs/dto/story/story';
 import { AuthMember } from '../auth/decorators/authmember.decorator';
 import { ObjectId } from 'mongoose';
 import { shapeIntoMongoObjectId } from '../../libs/config';
+import { Member } from '../../libs/dto/member/member';
+import { WithoutGuard } from '../auth/guards/without.guard';
 
 @Resolver()
 export class StoryResolver {
@@ -44,5 +46,16 @@ export class StoryResolver {
         console.log('Mutation deleteStory')
         const storyId = shapeIntoMongoObjectId(input)
         return await this.storyService.deleteStory(memberId, storyId)
+    }
+
+    @UseGuards(AuthGuard)
+    @Mutation((returns) => Story)
+    public async targetLikeStory(
+        @Args('likeRefId') input: string,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<Story>{
+        console.log('Mutation get story')
+        const likeRefId = shapeIntoMongoObjectId(input)
+        return await this.storyService.targetLikeStory(memberId, likeRefId)
     }
 }
