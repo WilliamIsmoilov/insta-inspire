@@ -29,6 +29,10 @@ const CommentSchema = new Schema(
 			type: Schema.Types.ObjectId,
 			required: true,
 		},
+		commentLikes: {
+			type: Number,
+			default: 0
+		}
 	},
 	{ timestamps: true, collection: 'comments' },
 );

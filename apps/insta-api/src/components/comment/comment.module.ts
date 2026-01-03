@@ -7,6 +7,7 @@ import { AuthModule } from '../auth/auth.module';
 import { MemberModule } from '../member/member.module';
 import { PostModule } from '../post/post.module';
 import { BoardArticleModule } from '../board-article/board-article.module';
+import { LikeModule } from '../like/like.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { BoardArticleModule } from '../board-article/board-article.module';
     AuthModule,
     MemberModule,
     PostModule,
-    BoardArticleModule
+    BoardArticleModule,
+    LikeModule
   ],
 
   providers: [CommentService, CommentResolver],

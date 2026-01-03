@@ -102,5 +102,14 @@ export class BoardArticleResolver {
 
     /**   LIKE TARGET   **/
 
-    
+    @UseGuards(AuthGuard)
+    @Mutation((returns) => BoardArticle)
+    public async likeTargetBoardArticle(
+        @Args('likeRefId') input: string,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<BoardArticle>{
+        console.log('Mutation: Like taget toggle')
+        const likeRefId = shapeIntoMongoObjectId(input)
+        return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId)
+    }
 }

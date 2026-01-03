@@ -42,7 +42,7 @@ export class LikeService {
         const{memberId, likeRefId} = input
         const result = await this.likeModel.findOne({memberId: memberId, likeRefId: likeRefId}).exec()
 
-        return result ? [{memberId: memberId, likeRefId: likeRefId, myFavorite: true}] : []
+        return result ? [{memberId: memberId, likeRefId: likeRefId, myFavourite: true}] : []
     }
 
     public async getMyFavouritePosts(memberId: ObjectId, input: OrdinaryInquiry):Promise<Posts>{

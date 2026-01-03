@@ -29,6 +29,9 @@ export class Comment {
 	@Field(() => Date)
 	updatedAt: Date;
 
+	@Field(() => Int)
+	commentLikes: number
+
 	/** from aggregation **/
 
 	@Field(() => Member, { nullable: true })

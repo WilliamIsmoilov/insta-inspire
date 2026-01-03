@@ -10,6 +10,7 @@ import LikeSchema from '../../schemas/Like.model';
       schema: LikeSchema
     }])
   ],
-  providers: [LikeService]
+  providers: [LikeService],
+  exports: [LikeService]
 })
 export class LikeModule {}

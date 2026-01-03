@@ -8,15 +8,22 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
-import { shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { skip } from 'node:test';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { ViewService } from '../view/view.service';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
+import { LikeInput } from '../../libs/dto/like/like.input';
 
 @Injectable()
 export class BoardArticleService {
     constructor(
         @InjectModel('BoardArticle')
         private readonly  boardArticleModel: Model<BoardArticle>,
-        private memberService: MemberService,
+        private readonly memberService: MemberService,
+        private readonly viewService: ViewService,
+        private readonly likeService: LikeService
     ){}
 
     public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput): Promise<BoardArticle>{
@@ -47,11 +54,20 @@ export class BoardArticleService {
         const targetArticle: BoardArticle = await this.boardArticleModel.findOne(search).lean().exec()
         if(!targetArticle) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
 
-            //todo view like
+        if(memberId){
+            const viewInput = {memberId: memberId, viewRefId: articleId, viewGroup: ViewGroup.ARTICLE};
+            const newView = await this.viewService.recordView(viewInput)
+            if(newView){
+                await this.articleStatsEditor({_id: articleId, targetKey: 'articleViews', modifier: 1})
+                targetArticle.articleViews++
+            }
+            const likeInput = {memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE};
+            targetArticle.meLiked = await this.likeService.checkLikeExistence(likeInput)
+        }
             targetArticle.memberData = await this.memberService.getMember(null, targetArticle.memberId)
             return targetArticle
     }
-
+    
 
          public async articleStatsEditor(input: StatisticModifier): Promise<BoardArticle>{
          const {_id, targetKey, modifier} = input;
@@ -100,14 +116,40 @@ export class BoardArticleService {
                 list: [{ $skip: (input.page -1) * input.limit},
                     {$limit: input.limit},
                     //meLiked
-                    //lookupMember,
-                    // {$unwind: '$memberData'}
+                    lookupAuthMemberLiked(memberId),
+                    lookupMember,
+                    {$unwind: '$memberData'}
                 ],
                 metaCounter: [{$count: 'total'}]  
             }}
         ]).exec()
         if(!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
             return result[0]
+    }
+
+        /**   LIKES   **/
+
+    public async likeTargetBoardArticle(memberId: ObjectId, likeRefId: ObjectId): Promise<BoardArticle>{
+        const target: BoardArticle = await this.boardArticleModel.findOne({
+            _id: likeRefId, articleStatus: BoardArticleStatus.ACTIVE
+        }).exec()
+        if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND)
+
+            const input: LikeInput = {
+                memberId: memberId,
+                likeRefId: likeRefId,
+                likeGroup: LikeGroup.ARTICLE
+            };
+
+            const modifier: number = await this.likeService.toggleLike(input);
+            const result = await this.articleStatsEditor({
+                _id: likeRefId,
+                targetKey: 'articleLikes',
+                modifier: modifier
+            })
+
+            if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG)
+                return result
     }
 
 
@@ -127,7 +169,8 @@ export class BoardArticleService {
             {$facet: {
                 list: [{$skip: (input.page -1) * input.limit},
                     {$limit: input.limit},
-                    // todo member view 
+                    lookupMember,
+                    {$unwind: '$memberData'}
                 ],
                 metaCounter: [{$count: 'total'}]
             }}
@@ -164,8 +207,5 @@ export class BoardArticleService {
     }
 
 
-    /**   LIKES   **/
 
-
-    
 }
