@@ -57,7 +57,8 @@ export class FollowResolver {
         @AuthMember('_id') memberId: ObjectId
     ): Promise<Followings>{
         console.log('@Query: get member followings')
-        const {followerId} = shapeIntoMongoObjectId(input.search)
+        const { followerId } = input.search;
+        input.search.followerId = shapeIntoMongoObjectId(followerId)
         return await this.followService.getMemberFollowings(memberId, input)
     }
 

@@ -60,7 +60,7 @@ export const lookupMember = {
 export const lookupFollowingData = {
 	$lookup: {
 		from: 'members',
-		localFields: 'memberId',
+		localField: 'followingId',
 		foreignField: '_id',
 		as: 'followingData'
 	}
@@ -99,7 +99,7 @@ export const lookupAuthMemberLiked =
 		$lookup: {
 			from: 'likes',
 			let: {
-				localLikedRefId: targetRefId,
+				localLikeRefId: targetRefId,
 				localMemberId: memberId,
 				localMyFavourite: true
 			},

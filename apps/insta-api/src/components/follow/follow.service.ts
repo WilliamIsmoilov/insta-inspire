@@ -85,7 +85,7 @@ export class FollowService {
 
     public async getMemberFollowings(memberId: ObjectId, input: FollowInquery): Promise<Followings>{
         const {page, limit, search} = input;
-        if(!search.followerId) throw new InternalServerErrorException(Message.BAD_REQUEST)
+        if(!search?.followerId) throw new InternalServerErrorException(Message.BAD_REQUEST)
             const match: T = {followerId: search?.followerId}
         console.log('match:', match)
 
@@ -101,7 +101,6 @@ export class FollowService {
                     lookupFollowingData,
                     {$unwind: '$followingData'}
                 ],
-
                 metaCounter: [{$count: 'total'}]
             }}
         ]).exec()
