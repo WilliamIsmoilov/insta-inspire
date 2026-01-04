@@ -89,8 +89,6 @@ export class BoardArticleService {
             input, 
             {new: true}).exec()
 
-         if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED)
-
                 if(articleStatus === BoardArticleStatus.DELETE) {
                     await this.memberService.memberStatsEditor({
                         _id: memberId,
@@ -98,6 +96,7 @@ export class BoardArticleService {
                         modifier: -1
                     })
                 }
+                if(!result) throw new InternalServerErrorException(Message.UPDATE_FAILED)
                 return result    
     }
 
