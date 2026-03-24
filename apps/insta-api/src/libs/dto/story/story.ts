@@ -13,7 +13,7 @@ export class Story{
     @Field(() => String)
     story: string
 
-    @Field(() => Date)
+    @Field(() => Date, {nullable: true})
     expiresAt?: Date 
 
     @Field(() => Int)
@@ -50,7 +50,7 @@ export class StoryInput{
 
     @IsOptional()
     @Field(() => String, {nullable: true})
-    storyDesc: string
+    storyDesc?: string
 
     memberId?: ObjectId;
 }

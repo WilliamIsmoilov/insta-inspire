@@ -89,13 +89,19 @@ export class FollowService {
             const match: T = {followerId: search?.followerId}
         console.log('match:', match)
 
+        const paginationStages = page && limit
+           ? [
+            { $skip: (page - 1) * limit },
+            { $limit: limit }
+              ]
+            : [];
+
         const result = await this.followModel.aggregate([
             {$match: match},
             {$sort: {createdAt: Direction.DESC}},
             {$facet: {
                 list: [
-                    {$skip: (page - 1) * limit},
-                    {$limit: limit},
+                    ...paginationStages,
                     lookupAuthMemberLiked(memberId, '$followingId'),
                     lookupAuthMemberFollowed({followerId: memberId, followingId: '$followingId'}),
                     lookupFollowingData,

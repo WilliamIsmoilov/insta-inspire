@@ -16,13 +16,13 @@ class FollowSearch{
 
 @InputType()
 export class FollowInquery{
-    @IsNotEmpty()
-    @Field(() => Int)
-    page: number;
+   
+    @Field(() => Int, {nullable: true})
+    page?: number;
 
-    @IsNotEmpty()
-    @Field(() => Int)
-    limit: number;
+   
+    @Field(() => Int, {nullable: true})
+    limit?: number;
 
     @IsNotEmpty()
     @Field(() => FollowSearch)

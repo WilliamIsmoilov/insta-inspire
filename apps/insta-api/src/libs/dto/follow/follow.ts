@@ -80,7 +80,7 @@ export class Followings{
     list: Following[]
 
     @Field(() => [TotaLCounter], {nullable: true})
-    metaCounter: TotaLCounter[]
+    metaCounter?: TotaLCounter[]
 }
 
 @ObjectType()
@@ -89,5 +89,5 @@ export class Followers{
     list: Follower[]
 
     @Field(() => [TotaLCounter], {nullable: true})
-    metaCounter: TotaLCounter[]
+    metaCounter?: TotaLCounter[]
 }

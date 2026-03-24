@@ -42,6 +42,8 @@ export class StoryService {
         }
     }
 
+
+
     public async getStory(memberId: ObjectId, storyId: ObjectId): Promise<Story>{
         const search: T = {
             _id: storyId
