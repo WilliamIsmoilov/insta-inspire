@@ -2,7 +2,7 @@ import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { PostService } from './post.service';
 import {  UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { AllPostsInquery, OrdinaryInquiry, PostInput } from '../../libs/dto/post/post.input';
+import { AllPostsInquery, OrdinaryInquiry, PostInput, PostInquery } from '../../libs/dto/post/post.input';
 import { AuthMember } from '../auth/decorators/authmember.decorator';
 import { ObjectId } from 'mongoose';
 import { Post, Posts } from '../../libs/dto/post/post';
@@ -41,6 +41,16 @@ export class PostResolver {
         return await this.postService.getPost(memberId, postId)
     }
 
+    @UseGuards(WithoutGuard)
+    @Query(() => Posts)
+    public async getPosts(
+        @Args('input') input: PostInquery,
+        @AuthMember('_id') memberId: ObjectId
+    ): Promise<Posts>{
+        console.log('Query: getPosts')
+        return await this.postService.getPosts(memberId, input)
+    }
+
     @UseGuards(AuthGuard)
     @Mutation(() => Post)
     public async updatePost(
@@ -55,7 +65,7 @@ export class PostResolver {
     @UseGuards(AuthGuard)
     @Mutation((returns) => Post)
     public async likeTargetPost(
-        @Args('propertyId') input: string,
+        @Args('postId') input: string,
         @AuthMember('_id') memberId: ObjectId
     ): Promise<Post>{
         console.log('mutation likeTargetPost')

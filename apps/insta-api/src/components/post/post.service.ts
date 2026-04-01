@@ -56,7 +56,7 @@ export class PostService {
         if(newView){
             await this.postStatsEditor({
                 _id: postId,
-                targetKey: 'postlikes',
+                targetKey: 'postViews',
                 modifier: 1
             })
             targetPost.postViews++
@@ -108,12 +108,20 @@ export class PostService {
         this.shapeMatchQuery(match, input);
         console.log('match:', match)
 
+        const paginationStages = input.page && input.limit
+           ? [
+            { $skip: (input.page - 1) * input.limit },
+            { $limit: input.limit }
+              ]
+            : [];
+
+
         const  result = await this.postModel.aggregate([
             {$match: match},
             {$sort: sort},
             {$facet: {
-                list: [{$skip: (input.page -1) * input.limit },
-                    {$limit: input.limit},
+                list: [
+                    ...paginationStages,
                     //meLiked
                     lookupAuthMemberLiked(memberId),
                     lookupMember,
@@ -166,7 +174,7 @@ export class PostService {
             const result = await this.postStatsEditor({
                 _id: likeRefId,
                 targetKey: 'postLikes',
-                modifier: modifier
+                modifier
             })
             if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
       return result;

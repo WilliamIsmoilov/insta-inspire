@@ -56,19 +56,23 @@ export class PISearch{
     @Field(() => String, {nullable: true})
     postTitle?: string
 
+    @IsOptional()
+    @Field(() => String, {nullable: true})
+    postViews?: string
+
 }
 
 @InputType()
 export class PostInquery{
-    @IsNotEmpty()
+    @IsOptional()
     @Min(1)
-    @Field(() => Int)
-    page: number;
+    @Field(() => Int, {nullable: true})
+    page?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @Min(1)
-    @Field(() => Int)
-    limit: number;
+    @Field(() => Int, {nullable: true})
+    limit?: number;
 
     @IsOptional()
     @IsIn(availablePostSorts)
